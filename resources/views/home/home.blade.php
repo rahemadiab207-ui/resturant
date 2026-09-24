@@ -29,12 +29,17 @@
                 </div>
                 <div class="d-flex flex-column mt-3">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        @if($meal->is_on_sale && $meal->discount_price)
-                            <span class="fs-5 fw-bold text-danger">{{ $meal->discount_price }} ج.م</span>
-                            <del class="text-muted small">{{ $meal->price }} ج.م</del>
-                        @else
-                            <span class="fs-5 fw-bold text-dark">{{ $meal->price }} ج.م</span>
-                        @endif
+                        @if(isset($meal->discount) && $meal->discount > 0)
+                               <!-- السعر بعد حساب نسبة الخصم -->
+                        <span class="fs-5 fw-bold text-danger">
+                            {{ $meal->price - ($meal->price * $meal->discount / 100) }} ج.م
+                             </span>
+                                       <!-- السعر القديم مشطوب -->
+                                     <del class="text-muted small">{{ $meal->price }} ج.م</del>
+                                              @else
+                                         <!-- السعر العادي إذا لم يوجد خصم -->
+                                             <span class="fs-5 fw-bold text-dark">{{ $meal->price }} ج.م</span>
+                                   @endif
                     </div>
                     
                     <form action="{{ route('cart.add', $meal->id) }}" method="POST">

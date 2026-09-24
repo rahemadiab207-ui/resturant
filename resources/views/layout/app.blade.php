@@ -74,6 +74,18 @@
     transition: background-color 0.3s ease, transform 0.2s ease !important;
 }
 
+/* إجبار محتويات الكارت على الاصطفاف العمودي في كل الموقع */
+.card .card-body {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+}
+
+/* إجبار عناصر الأسعار وزر السلة لتكون تحت بعضها دائماً */
+.card .card-body form {
+    display: block !important;
+    width: 100% !important;
+}
 .card .btn:hover {
     transform: scale(1.05) !important; /* يكبر الزر قليلاً عند الماوس */
     background-color: #644e09 !important;
@@ -96,7 +108,7 @@
         font-family: 'Cairo', sans-serif !important;
     }
 
-
+    }
 
 </style>
     
@@ -138,13 +150,14 @@
           
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle text-custom-yellow fw-bold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              وجبات الشامي 🌯
+             اكلات الشامي🌯
             </a>
             <ul class="dropdown-menu dropdown-menu-dark">
               <li><a class="dropdown-item" href="{{ route('category.show', 'chicken') }}">دجاج الشامي 🍗</a></li>
               <li><a class="dropdown-item" href="{{ route('category.show', 'shawarma') }}">شاورما الشامي 🥙</a></li>
               <li><a class="dropdown-item" href="{{ route('category.show', 'sandwiches') }}">سندوتشات الشامي 🥖</a></li>
               <li><a class="dropdown-item" href="{{ route('category.show', 'appetizers') }}">مقبلات الشامي 🍟</a></li>
+               <li><a class="dropdown-item" href="{{ route('category.show', 'meals') }}">وجبات الشامي 🍟</a></li>
             </ul>
           </li>
 

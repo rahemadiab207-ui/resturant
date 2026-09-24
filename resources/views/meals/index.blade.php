@@ -28,31 +28,51 @@
             <!-- صورة الوجبة -->
             <img src="{{ asset('storage/' . $meal->image) }}" class="card-img-top" style="height: 300px; object-fit: cover;" alt="{{ $meal->name }}">
             
-            <div class="card-body d-flex flex-column justify-content-between">
-                <div>
-                    <h5 class="card-title fw-bold text-center mb-2">{{ $meal->name }}</h5>
-                    <!-- إرجاع وصف الوجبة -->
-                    <p class="card-text text-muted text-lift small mb-3">{{ $meal->description }}</p>
-                </div>
+            <div class="card-body d-flex flex-column justify-content-between h-100">
+    <div>
+        <h5 class="card-title fw-bold">{{ $meal->name }}</h5>
+        <p class="card-text text-muted small mb-3">{{ $meal->description }}</p>
+    </div>
 
-                <!-- الجزء السفلي: السعر وزر الإضافة -->
-                <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
-                    @if($meal->is_on_sale && $meal->discount_price)
-                        <span class="fs-5 fw-bold text-danger">{{ $meal->discount_price }} ج.م</span>
-                    @else
-                        <span class="fs-5 fw-bold text-dark">{{ $meal->price }} ج.م</span>
-                    @endif
-                    
-                    <!-- نموذج إضافة للسلة بتنسيق مدمج -->
-                    <form action="{{ route('cart.add', $meal->id) }}" method="POST" class="d-inline m-0 p-0">
-                        @csrf
-                        <input type="hidden" name="quantity" value="1">
-                        <button type="submit" class="btn btn-warning btn-sm px-3 fw-bold">
-                            <i class="fa-solid fa-cart-plus me-1"></i> إضافة للسلة
-                        </button>
-                    </form>
-                </div>
-            </div>
+    <div>
+     @php
+    // التحقق من وجود قيمة خصم صالحة وأكبر من الصفر
+    $discountVal = $meal->discount_price ?? 0;
+    $hasDiscount = $discountVal > 0;
+    // حساب السعر النهائي بعد طرح الخصم من السعر الأساسي
+    $finalPrice = $meal->price - $discountVal;
+@endphp
+
+<!-- قسم الأسعار -->
+<div class="mb-3 text-end">
+    @if($hasDiscount)
+        <!-- السعر الأساسي القديم مشطوب في الأعلى -->
+        <div class="text-muted text-decoration-line-through small" style="font-size: 13px;">
+            {{ number_format($meal->price, 2) }} ج.م
+        </div>
+        <!-- السعر الجديد بعد الخصم تحته مباشرة -->
+        <div class="text-danger fw-bold fs-5">
+            {{ number_format($finalPrice, 2) }} ج.م
+        </div>
+    @else
+        <!-- لو مفيش خصم، اعرض السعر الأساسي فقط -->
+        <div class="text-dark fw-bold fs-5">
+            {{ number_format($meal->price, 2) }} ج.م
+        </div>
+    @endif
+</div>
+       
+
+        <!-- زر الإضافة للسلة -->
+        <form action="{{ route('cart.add', $meal->id) }}" method="POST">
+            @csrf
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn btn-warning w-100 fw-bold">
+                <i class="fa-solid fa-cart-plus me-1"></i> إضافة للسلة
+            </button>
+        </form>
+    </div>
+</div>
         </div>
     </div>
 @endforeach

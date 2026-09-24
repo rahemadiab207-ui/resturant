@@ -8,15 +8,12 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function show($id)
-    {
-        // جلب بيانات القسم، وإذا لم يوجد يظهر 404
-        $category = Category::findOrFail($id);
-
-        // جلب الوجبات المرتبطة بهذا القسم
-        $meals = Meal::where('category_id', $id)->get();
-
-        // إرسال البيانات للـ View
-        return view('meals.index', compact('category', 'meals'));
-    }
+   public function show($slug)
+{
+    // البحث باستخدام الـ slug أو الاسم بدلاً من الـ id
+    $category = Category::where('slug', $slug)->firstOrFail(); 
+    $meals = Meal::where('category_id', $category->id)->get();
+$categories = Category::all();
+    return view('meals.index', compact('category', 'meals'));
+}
 }

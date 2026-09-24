@@ -29,62 +29,60 @@
                         }
                     @endphp
 
-                    <div class="col-md-4">
-                        <div class="card h-100 shadow-sm border-0 rounded-3 position-relative">
-                            {{-- شارة الخصم إن وجد --}}
-                            @if($hasDiscount)
-                                <span class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 m-2 rounded-2 fw-bold small">
-                                    خصم {{ $meal->discount ?? '' }}%
-                                </span>
-                            @endif
+                   <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0 rounded-3 position-relative" style="display: block !important;">
+        {{-- شارة الخصم إن وجد --}}
+        @if($hasDiscount)
+            <span class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 m-2 rounded-2 fw-bold small" style="z-index: 10;">
+                خصم {{ $meal->discount ?? '' }}%
+            </span>
+        @endif
 
-                            @if($meal->image)
-                                <img src="{{ asset('storage/' . $meal->image) }}" class="card-img-top" alt="{{ $meal->name }}" style="height: 200px; object-fit: cover;">
-                            @else
-                                <img src="https://images.unsplash.com/photo-1561758033-d89a9ad46330?q=80&w=500" class="card-img-top" alt="{{ $meal->name }}" style="height: 200px; object-fit: cover;">
-                            @endif
+        @if($meal->image)
+            <img src="{{ asset('storage/' . $meal->image) }}" class="card-img-top" alt="{{ $meal->name }}" style="height: 200px; object-fit: cover; width: 100%;">
+        @else
+            <img src="https://images.unsplash.com/photo-1561758033-d89a9ad46330?q=80&w=500" class="card-img-top" alt="{{ $meal->name }}" style="height: 200px; object-fit: cover; width: 100%;">
+        @endif
 
-                            <div class="card-body d-flex flex-column justify-content-between">
-                                <div>
-                                    <h5 class="card-title fw-bold">{{ $meal->name }}</h5>
-                                    <p class="card-text text-muted small">{{ $meal->description }}</p>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    {{-- عرض الأسعار (قبل وبعد الخصم) --}}
-                                    <div>
-                                        @if($hasDiscount)
-                                            <span class="text-decoration-line-through text-muted me-1 small">{{ number_format($meal->price, 2) }} ج.م</span>
-                                            <span class="fw-bold text-black fs-5">{{ number_format($finalPrice, 2) }} ج.م</span>
-                                        @else
-                                            <span class="fw-bold text-black fs-5">{{ number_format($meal->price, 2) }} ج.م</span>
-                                        @endif
-                                    </div>
-                                    
-                                    <!-- زر الإضافة للسلة -->
-                                    <form action="{{ route('cart.add', $meal->id) }}" method="POST" class="d-flex align-items-center gap-2">
-                                        @csrf
-                                        <input type="number" name="quantity" value="1" min="1" class="form-control form-control-sm text-center" style="width: 55px;">
-                                        <button type="submit" class="btn btn-warning btn-sm fw-bold text-white">
-                                            <i class="fa-solid fa-cart-plus me-1"></i> أضف
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-12 text-center py-4">
-                        <p class="text-muted fst-italic">لا توجد وجبات مضافة في هذا القسم حالياً.</p>
-                    </div>
-                @endforelse
-            </div>
+       <div class="card-body" style="display: block !important; text-align: right !important; padding: 15px !important;">
+    
+    <!-- اسم ووصف الوجبة -->
+    <div style="margin-bottom: 15px !important;">
+        <h5 class="card-title fw-bold" style="color: #fff !important; margin-bottom: 5px;">{{ $meal->name }}</h5>
+        <p class="card-text text-muted small" style="margin-bottom: 0;">{{ $meal->description }}</p>
+    </div>
+
+    <!-- السعر القديم (إن وجد) -->
+    @if($hasDiscount)
+        <div style="margin-bottom: 3px !important;">
+            <span style="text-decoration: line-through !important; color: #aaa !important; font-size: 13px !important;">
+                {{ number_format($meal->price, 2) }} ج.م
+            </span>
+        </div>
+        <!-- السعر الجديد -->
+        <div style="margin-bottom: 12px !important;">
+            <span style="color: #ff6b6b !important; font-weight: bold !important; font-size: 18px !important;">
+                {{ number_format($finalPrice, 2) }} ج.م
+            </span>
         </div>
     @else
-        <div class="text-center py-5">
-            <div class="alert alert-warning d-inline-block px-5">لم يتم العثور على القسم المطلوب.</div>
+        <!-- السعر العادي -->
+        <div style="margin-bottom: 12px !important;">
+            <span style="font-weight: bold !important; color: #fff !important; font-size: 18px !important;">
+                {{ number_format($meal->price, 2) }} ج.م
+            </span>
         </div>
     @endif
 
+    <!-- زر إضافة للسلة -->
+    <div style="width: 100% !important; clear: both !important;">
+        <form action="{{ route('cart.add', $meal->id) }}" method="POST" style="width: 100% !important; margin: 0 !important;">
+            @csrf
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn btn-warning w-100 fw-bold" style="width: 100% !important;">
+                <i class="fa-solid fa-cart-plus me-1"></i> إضافة للسلة
+            </button>
+        </form>
+    </div>
+
 </div>
-@endsection

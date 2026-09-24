@@ -54,6 +54,14 @@
                         <input type="number" step="0.01" name="price" id="price" class="form-control" value="{{ old('price') }}" required placeholder="0.00">
                     </div>
 
+                 <!-- خصم الوجبة (جديد) -->
+             <div class="mb-3">
+                 <label for="discount" class="form-label fw-bold">  قيمة أو نسبة الخصم (اختياري) % </label>
+                 <div class="input-group">
+                     <input type="number" step="0.01" min="0" max="100" name="discount" id="discount" class="form-control" value="{{ old('discount',$meal->discount ??'') }}" placeholder="0.00">
+                     <span class="input-group=text">%</span>
+                     </div>     
+                     </div>
                     <!-- صورة الوجبة -->
                     <div class="mb-4">
                         <label for="image" class="form-label fw-bold">صورة الوجبة</label>

@@ -25,33 +25,36 @@ return view('meals.index', compact('meals', 'categories'));    }
 }
 
     public function store(Request $request)
-    {
-        // التحقق من صحة المدخلات
-        $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price'       => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ]);
+{
+    // التحقق من صحة المدخلات
+    $request->validate([
+        'name'        => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'price'       => 'required|numeric|min:0',
+        'discount_price'    => 'nullable|numeric|min:0|max:100', // أضيفي هذا السطر للتحقق من الخصم
+        'category_id' => 'required|exists:categories,id',
+        'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+    ]);
 
-        // رفع الصورة إذا تم اختيارها
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('meals', 'public');
-        }
-
-        // إنشاء الوجبة
-        Meal::create([
-            'name'        => $request->name,
-            'description' => $request->description,
-            'price'       => $request->price,
-            'category_id' => $request->category_id,
-            'image'       => $imagePath,
-        ]);
-
-        return redirect()->route('admin.dashboard')->with('success', 'تمت إضافة الوجبة بنجاح! ✨');
+    // رفع الصورة إذا تم اختيارها
+    $imagePath = null;
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('meals', 'public');
     }
+
+    // إنشاء الوجبة مع قيمة الخصم
+    Meal::create([
+        'name'        => $request->name,
+        'description' => $request->description,
+        'price'       => $request->price,
+        'discount_price' => $request->discount, 
+        'is_on_sale'  =>$request->filled('discount')? 1:0,
+        'category_id' => $request->category_id,
+        'image'       => $imagePath,
+    ]);
+
+    return redirect()->route('admin.dashboard')->with('success', 'تمت إضافة الوجبة بنجاح! ✨');
+}
 
     public function edit($id)
     {
@@ -68,14 +71,18 @@ return view('meals.index', compact('meals', 'categories'));    }
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
             'price'       => 'required|numeric|min:0',
+            'discount_price'    => 'nullable|numeric|min:0|max:100',
             'category_id' => 'required|exists:categories,id',
             'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            
         ]);
 
         $data = [
             'name'        => $request->name,
             'description' => $request->description,
             'price'       => $request->price,
+            'discount_price'=> $request->discount,
+            'is_on_sale'  =>$request->filled('discount')? 1:0,
             'category_id' => $request->category_id,
         ];
 
