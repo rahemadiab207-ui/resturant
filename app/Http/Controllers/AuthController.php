@@ -39,7 +39,7 @@ class AuthController extends Controller
 
     Auth::login($user);
 
-    if ($user->role === 'al-shami1@gmail.com,admin-1gmail.com') {
+    if ($user->role === 'al-shami1@gmail.com') {
         return redirect()->route('admin.dashboard')->with('success', 'أهلاً بك في لوحة تحكم الأدمن');
     }
     if ($user->email=== 'admin') {

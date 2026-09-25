@@ -319,5 +319,9 @@
           });
       });
     </script>
+    /*@auth
+    {{-- لو المستخدم مسجل دخول، يظهر الشات بوت الخاص بمطعم الشامي --}}
+    @include('components.chatbot')
+@endauth*/
 </body>
 </html>

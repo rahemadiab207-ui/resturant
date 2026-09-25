@@ -10,6 +10,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\OrderItemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\ChatbotController;
 // الصفحات العامة المتاحة للجميع
 Route::get('/', [MealController::class, 'index'])->name('home');
 Route::get('/category/{slug}', [CategoryController::class, 'show'])->name('category.show');
@@ -25,6 +26,16 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
+
+Route::middleware('admin')->group(function () {
+
+    Route::get('/chatbot', [ChatbotController::class, 'index'])
+        ->name('chatbot');
+
+    Route::put('/chatbot/{id}/status', [ChatbotController::class, 'updateStatus'])
+        ->name('chatbot.status');
+
+});
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // مسارات المستخدمين المسجلين
@@ -56,3 +67,9 @@ Route::delete('/order-items/{orderItem}', [OrderItemController::class, 'destroy'
 
 Route::get('/menu', [MenuController::class, 'index'])->name('menu.index');
 Route::get('/meal/{id}', [MenuController::class, 'show'])->name('meal.show');
+
+
+
+ //use App\Http\Controllers\ChatbotController;
+
+ //Route::post('/shami-chatbot', [ChatbotController::class, 'handle'])->middleware('auth');
