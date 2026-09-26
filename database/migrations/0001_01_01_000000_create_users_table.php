@@ -1,49 +1,300 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+namespace App\Http\Controllers;
 
-return new class extends Migration
+use App\Models\Order;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+
+class AuthController extends Controller
 {
-    public function up(): void
+    /*
+    |--------------------------------------------------------------------------
+    | Show Login Page
+    |--------------------------------------------------------------------------
+    */
+
+    public function showLogin()
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->id();
-
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-
-            $table->string('phone')->nullable();
-            $table->text('address')->nullable();
-            $table->string('role')->default('customer');
-
-            $table->rememberToken();
-            $table->timestamps();
-        });
-
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->longText('payload');
-            $table->integer('last_activity')->index();
-        });
+        return view('auth.login');
     }
 
-    public function down(): void
+
+    /*
+    |--------------------------------------------------------------------------
+    | Login
+    |--------------------------------------------------------------------------
+    */
+
+    public function login(Request $request)
     {
-        Schema::dropIfExists('sessions');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('users');
+        $credentials = $request->validate([
+            'email' => [
+                'required',
+                'email',
+            ],
+
+            'password' => [
+                'required',
+            ],
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Attempt Login
+        |--------------------------------------------------------------------------
+        */
+
+        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+
+            return back()
+                ->withErrors([
+                    'email' => 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+                ])
+                ->withInput($request->only('email'));
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Regenerate Session
+        |--------------------------------------------------------------------------
+        */
+
+        $request->session()->regenerate();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin
+        |--------------------------------------------------------------------------
+        */
+
+        if (Auth::user()->isAdmin()) {
+            return redirect()
+                ->route('dashboard')
+                ->with('success', 'تم تسجيل الدخول بنجاح.');
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Customer
+        |--------------------------------------------------------------------------
+        |
+        | Customers go directly to Customer2.
+        |
+        */
+
+        return redirect()
+            ->route('customer.dashboard')
+            ->with('success', 'أهلاً بك في El Shamy Cafeteria.');
     }
-};
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Show Register Page
+    |--------------------------------------------------------------------------
+    */
+
+    public function showRegister()
+    {
+        return view('auth.register');
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Register
+    |--------------------------------------------------------------------------
+    */
+
+    public function register(Request $request)
+    {
+        /*
+        |--------------------------------------------------------------------------
+        | Validation
+        |--------------------------------------------------------------------------
+        */
+
+        $validated = $request->validate([
+
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+            ],
+
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email',
+            ],
+
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+            ],
+
+            'phone' => [
+                'nullable',
+                'string',
+                'max:30',
+            ],
+
+            'address' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
+
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Customer
+        |--------------------------------------------------------------------------
+        */
+
+        $user = User::create([
+
+            'name' => $validated['name'],
+
+            'email' => $validated['email'],
+
+            'password' => Hash::make(
+                $validated['password']
+            ),
+
+            'phone' => $validated['phone'] ?? null,
+
+            'address' => $validated['address'] ?? null,
+
+            /*
+            |--------------------------------------------------------------------------
+            | IMPORTANT
+            |--------------------------------------------------------------------------
+            | The project uses:
+            |
+            | admin = Admin
+            | user  = Customer
+            |
+            */
+
+            'role' => 'user',
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login Newly Registered Customer
+        |--------------------------------------------------------------------------
+        */
+
+        Auth::login($user);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Regenerate Session
+        |--------------------------------------------------------------------------
+        */
+
+        $request->session()->regenerate();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Go Directly To Customer2
+        |--------------------------------------------------------------------------
+        */
+
+        return redirect()
+            ->route('customer.dashboard')
+            ->with(
+                'success',
+                'تم إنشاء الحساب بنجاح، أهلاً بك في El Shamy Cafeteria.'
+            );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    */
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Invalidate Session
+        |--------------------------------------------------------------------------
+        */
+
+        $request->session()->invalidate();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Regenerate CSRF Token
+        |--------------------------------------------------------------------------
+        */
+
+        $request->session()->regenerateToken();
+
+
+        return redirect()
+            ->route('home')
+            ->with(
+                'success',
+                'تم تسجيل الخروج بنجاح.'
+            );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customer Profile
+    |--------------------------------------------------------------------------
+    */
+
+    public function profile()
+    {
+        $user = Auth::user();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Customer Orders
+        |--------------------------------------------------------------------------
+        */
+
+        $orders = Order::with([
+            'items.meal',
+        ])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+
+        return view(
+            'customer2.profile',
+            compact(
+                'user',
+                'orders'
+            )
+        );
+    }
+}
