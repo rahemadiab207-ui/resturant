@@ -1,84 +1,210 @@
 @extends('layout.app')
+
+@section('title', 'Meals')
+
 @section('content')
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
+<div class="container py-4">
 
-    <div class="container py-3">
-        
-        <div class="text-center mb-4">
-            <h1 class="fw-bold text-warning">{{ $category->name ?? 'جميع الوجبات' }}</h1>
-            <p class="text-muted">
-                {{ isset($category) ? 'استمتع بأشهى وجبات قسم ' . $category->name . ' الطازجة' : 'استمتع بأشهى الوجبات الطازجة من مطعمنا' }}
+    <div class="page-header mb-4">
+
+        <div>
+            <h1 class="page-title">
+                Meals
+            </h1>
+
+            <p class="page-subtitle">
+                إدارة الوجبات
             </p>
         </div>
 
-        <!-- قائمة الوجبات -->
-        <div class="row g-4">
-            @foreach($meals as $meal)
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm border-0 rounded-3">
-            <!-- صورة الوجبة -->
-            <img src="{{ asset('storage/' . $meal->image) }}" class="card-img-top" style="height: 300px; object-fit: cover;" alt="{{ $meal->name }}">
-            
-            <div class="card-body d-flex flex-column justify-content-between h-100">
-    <div>
-        <h5 class="card-title fw-bold">{{ $meal->name }}</h5>
-        <p class="card-text text-muted small mb-3">{{ $meal->description }}</p>
+        <a
+            href="{{ route('meals.create') }}"
+            class="btn-modern btn-primary-modern"
+        >
+            + Add Meal
+        </a>
+
     </div>
 
-    <div>
-     @php
-    // التحقق من وجود قيمة خصم صالحة وأكبر من الصفر
-    $discountVal = $meal->discount_price ?? 0;
-    $hasDiscount = $discountVal > 0;
-    // حساب السعر النهائي بعد طرح الخصم من السعر الأساسي
-    $finalPrice = $meal->price - $discountVal;
-@endphp
 
-<!-- قسم الأسعار -->
-<div class="mb-3 text-end">
-    @if($hasDiscount)
-        <!-- السعر الأساسي القديم مشطوب في الأعلى -->
-        <div class="text-muted text-decoration-line-through small" style="font-size: 13px;">
-            {{ number_format($meal->price, 2) }} ج.م
+    <div class="card-modern">
+
+        <div class="table-responsive">
+
+            <table class="table table-modern">
+
+                <thead>
+
+                <tr>
+
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                @forelse($meals as $meal)
+
+                    <tr>
+
+                        <td>
+
+                            @if($meal->image)
+
+                                <img
+                                    src="{{ asset('storage/' . $meal->image) }}"
+                                    alt="{{ $meal->name }}"
+                                    style="
+                                        width:55px;
+                                        height:55px;
+                                        object-fit:cover;
+                                        border-radius:10px;
+                                    "
+                                >
+
+                            @else
+
+                                <div
+                                    style="
+                                        width:55px;
+                                        height:55px;
+                                        border-radius:10px;
+                                        background:#f1f5f9;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                    "
+                                >
+                                    —
+                                </div>
+
+                            @endif
+
+                        </td>
+
+                        <td>
+                            <strong>
+                                {{ $meal->name }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {{ $meal->category?->name ?? '-' }}
+                        </td>
+
+                        <td>
+
+                            @if($meal->discount_price)
+
+                                <span class="text-muted text-decoration-line-through">
+                                    {{ number_format($meal->price, 2) }}
+                                </span>
+
+                                <strong class="text-danger">
+                                    {{ number_format($meal->discount_price, 2) }}
+                                </strong>
+
+                            @else
+
+                                {{ number_format($meal->price, 2) }}
+
+                            @endif
+
+                            EGP
+
+                        </td>
+
+                        <td>
+
+                            @if($meal->is_available)
+
+                                <span class="badge-modern badge-success-modern">
+                                    Available
+                                </span>
+
+                            @else
+
+                                <span class="badge-modern badge-danger-modern">
+                                    Unavailable
+                                </span>
+
+                            @endif
+
+                        </td>
+
+                        <td>
+
+                            <div class="d-flex gap-2">
+
+                                <a
+                                    href="{{ route('meals.show', $meal->id) }}"
+                                    class="btn btn-sm btn-outline-primary"
+                                >
+                                    View
+                                </a>
+
+                                <a
+                                    href="{{ route('meals.edit', $meal->id) }}"
+                                    class="btn btn-sm btn-outline-secondary"
+                                >
+                                    Edit
+                                </a>
+
+                                <form
+                                    method="POST"
+                                    action="{{ route('meals.destroy', $meal->id) }}"
+                                    onsubmit="return confirm('هل أنت متأكد من حذف الوجبة؟')"
+                                >
+
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-sm btn-outline-danger"
+                                    >
+                                        Delete
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                @empty
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            class="text-center py-5 text-muted"
+                        >
+                            لا توجد وجبات.
+                        </td>
+
+                    </tr>
+
+                @endforelse
+
+                </tbody>
+
+            </table>
+
         </div>
-        <!-- السعر الجديد بعد الخصم تحته مباشرة -->
-        <div class="text-danger fw-bold fs-5">
-            {{ number_format($finalPrice, 2) }} ج.م
-        </div>
-    @else
-        <!-- لو مفيش خصم، اعرض السعر الأساسي فقط -->
-        <div class="text-dark fw-bold fs-5">
-            {{ number_format($meal->price, 2) }} ج.م
-        </div>
-    @endif
+
+    </div>
+
 </div>
-       
 
-        <!-- زر الإضافة للسلة -->
-        <form action="{{ route('cart.add', $meal->id) }}" method="POST">
-            @csrf
-            <input type="hidden" name="quantity" value="1">
-            <button type="submit" class="btn btn-warning w-100 fw-bold">
-                <i class="fa-solid fa-cart-plus me-1"></i> إضافة للسلة
-            </button>
-        </form>
-    </div>
-</div>
-        </div>
-    </div>
-@endforeach
-        </div>
-        
-    </div>
 @endsection
-</body>
-</html>

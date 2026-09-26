@@ -1,75 +1,238 @@
 @extends('layout.app')
 
+@section('title', 'Dashboard')
+
 @section('content')
-<div class="row">
-    <div class="col-12 mb-4 d-flex justify-content-between align-items-center">
-        <h2 class="fw-bold text-custom-yellow m-0">لوحة تحكم الأدمن 🛠️</h2>
-        <a href="{{ route('admin.meals.create') }}" class="btn btn-warning fw-bold">
-            ➕ إضافة وجبة جديدة
-        </a>
+
+<div class="container py-4">
+
+    <div class="page-header mb-4">
+
+        <div>
+
+            <h1 class="page-title">
+                Dashboard
+            </h1>
+
+            <p class="page-subtitle">
+                نظرة عامة على نظام المطعم
+            </p>
+
+        </div>
+
     </div>
 
-    <div class="col-12">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-custom-black text-white p-3 d-flex justify-content-between align-items-center">
-                <h5 class="m-0 fw-bold text-custom-yellow">قائمة الوجبات المضافة 🍽️</h5>
-                <span class="badge bg-warning text-dark fs-6">{{ isset($meals) ? $meals->count() : 0 }} وجبة</span>
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Total Orders
+                </div>
+
+                <div class="stat-value">
+                    {{ $totalOrders }}
+                </div>
+
             </div>
-            <div class="card-body p-0">
-                @if(isset($meals) && $meals->count() > 0)
-                    <div class="table-responsive">
-                        <table class="table table-hover text-center align-middle mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>#</th>
-                                    <th>الصورة</th>
-                                    <th>اسم الوجبة</th>
-                                    <th>القسم</th>
-                                    <th>السعر</th>
-                                    <th>الوصف</th>
-                                    <th>الإجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($meals as $meal)
-                                    <tr>
-                                        <td>{{ $loop->iteration }}</td>
-                                        <td>
-                                            @if($meal->image)
-                                                <img src="{{ asset('storage/' . $meal->image) }}" alt="{{ $meal->name }}" width="55" height="55" class="img-thumbnail rounded-circle object-fit-cover">
-                                            @else
-                                                <span class="badge bg-secondary">بدون صورة</span>
-                                            @endif
-                                        </td>
-                                        <td><strong>{{ $meal->name }}</strong></td>
-                                        <td>
-                                            <span class="badge bg-warning text-dark">
-                                                {{ $meal->category->name ?? 'غير محدد' }}
-                                            </span>
-                                        </td>
-                                        <td class="fw-bold text-success">{{ number_format($meal->price, 2) }} ج.م</td>
-                                        <td class="text-muted" style="max-width: 200px;">{{ $meal->description ?? '-' }}</td>
-                                        <td>
-                                            <a href="{{ route('admin.meals.create', $meal->id) }}" class="btn btn-sm btn-outline-warning me-1">تعديل ✏️</a>
-                                            
-                                            <form action="{{ route('admin.meals.destroy', $meal->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('هل أنت متأكد من حذف هذه الوجبة؟');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger">حذف 🗑️</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <div class="alert alert-info text-center m-4">
-                        لا توجد وجبات مضافة حتى الآن.
-                    </div>
-                @endif
-            </div>
+
         </div>
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Pending Orders
+                </div>
+
+                <div class="stat-value">
+                    {{ $pendingOrders }}
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Customers
+                </div>
+
+                <div class="stat-value">
+                    {{ $totalUsers }}
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-xl-3">
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Monthly Sales
+                </div>
+
+                <div class="stat-value">
+                    {{ number_format($monthlySales, 2) }}
+                    EGP
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
+
+
+    <div class="row g-4">
+
+        <div class="col-lg-7">
+
+            <div class="card-modern">
+
+                <div class="card-modern-header">
+
+                    <h5>
+                        Latest Meals
+                    </h5>
+
+                </div>
+
+                <div class="table-responsive">
+
+                    <table class="table table-modern">
+
+                        <thead>
+
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        @forelse($meals->take(8) as $meal)
+
+                            <tr>
+
+                                <td>
+                                    {{ $meal->name }}
+                                </td>
+
+                                <td>
+                                    {{ $meal->category?->name ?? '-' }}
+                                </td>
+
+                                <td>
+                                    {{ number_format($meal->active_price, 2) }}
+                                    EGP
+                                </td>
+
+                                <td>
+
+                                    @if($meal->is_available)
+
+                                        <span class="badge-modern badge-success-modern">
+                                            Available
+                                        </span>
+
+                                    @else
+
+                                        <span class="badge-modern badge-danger-modern">
+                                            Unavailable
+                                        </span>
+
+                                    @endif
+
+                                </td>
+
+                            </tr>
+
+                        @empty
+
+                            <tr>
+
+                                <td
+                                    colspan="4"
+                                    class="text-center text-muted py-4"
+                                >
+                                    No meals found.
+                                </td>
+
+                            </tr>
+
+                        @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-lg-5">
+
+            <div class="card-modern">
+
+                <div class="card-modern-header">
+
+                    <h5>
+                        Top Meals
+                    </h5>
+
+                </div>
+
+                <div class="card-modern-body">
+
+                    @forelse($topMeals as $item)
+
+                        <div
+                            class="d-flex justify-content-between align-items-center border-bottom py-3"
+                        >
+
+                            <strong>
+                                {{ $item->meal?->name ?? 'Unknown' }}
+                            </strong>
+
+                            <span class="badge-modern badge-primary-modern">
+                                {{ $item->total_qty }}
+                            </span>
+
+                        </div>
+
+                    @empty
+
+                        <p class="text-muted mb-0">
+                            No order data available.
+                        </p>
+
+                    @endforelse
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
+
 @endsection

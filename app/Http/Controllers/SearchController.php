@@ -2,32 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Meal;
 use App\Models\Category;
+use App\Models\Meal;
+use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
     public function liveSearch(Request $request)
     {
-        $query = $request->input('query');
+        $query = trim(
+            $request->input('query', '')
+        );
 
-        if (empty($query)) {
-            return response()->json(['meals' => [], 'categories' => []]);
+        if ($query === '') {
+            return response()->json([
+                'meals' => [],
+                'categories' => [],
+            ]);
         }
 
-        $meals = Meal::where('name', 'LIKE', "%{$query}%")
-                     ->select('id', 'name', 'price', 'discount_price', 'is_on_sale', 'image')
-                     ->limit(5)
-                     ->get();
+        $meals = Meal::where(function ($q) use ($query) {
+            $q->where('name', 'LIKE', "%{$query}%")
+                ->orWhere('description', 'LIKE', "%{$query}%");
+        })
+            ->select([
+                'id',
+                'name',
+                'price',
+                'discount_price',
+                'is_on_sale',
+                'image',
+            ])
+            ->limit(5)
+            ->get();
 
         $categories = Category::where('name', 'LIKE', "%{$query}%")
-                              ->select('id', 'name', 'slug')
-                              ->limit(3)
-                              ->get();
+            ->select([
+                'id',
+                'name',
+                'slug',
+            ])
+            ->limit(3)
+            ->get();
 
         return response()->json([
-            'meals'      => $meals,
+            'meals' => $meals,
             'categories' => $categories,
         ]);
     }

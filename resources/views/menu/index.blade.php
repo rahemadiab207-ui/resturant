@@ -1,88 +1,234 @@
 @extends('layout.app')
 
+@section('title', 'Menu')
+
 @section('content')
-<div class="container py-4">
 
-    @if(isset($category))
-        <div class="mb-5">
-            <!-- عنوان القسم المختار فقط -->
-            <div class="d-flex align-items-center mb-4 border-bottom pb-2">
-                <h2 class="fw-bold text-dark m-0">
-                    <i class="fa-solid fa-utensils text-warning me-2"></i>{{ $category->name }}
-                </h2>
-            </div>
+<div class="container py-5">
 
-            <!-- عرض وجبات هذا القسم فقط -->
-            <div class="row g-4">
-                @forelse($category->meals as $meal)
-                    @php
-                        // حساب السعر النهائي بعد الخصم
-                        $finalPrice = $meal->price;
-                        $hasDiscount = false;
+    <div class="menu-heading">
 
-                        if (isset($meal->discount_price) && $meal->discount_price > 0) {
-                            $finalPrice = $meal->discount_price;
-                            $hasDiscount = true;
-                        } elseif (isset($meal->discount) && $meal->discount > 0) {
-                            $finalPrice = $meal->price - ($meal->price * ($meal->discount / 100));
-                            $hasDiscount = true;
-                        }
-                    @endphp
+        <div>
+            <h1>Our Menu</h1>
+            <p>اختاري وجبتك المفضلة</p>
+        </div>
 
-                   <div class="col-md-4">
-    <div class="card h-100 shadow-sm border-0 rounded-3 position-relative" style="display: block !important;">
-        {{-- شارة الخصم إن وجد --}}
-        @if($hasDiscount)
-            <span class="position-absolute top-0 start-0 bg-danger text-white px-2 py-1 m-2 rounded-2 fw-bold small" style="z-index: 10;">
-                خصم {{ $meal->discount ?? '' }}%
-            </span>
-        @endif
-
-        @if($meal->image)
-            <img src="{{ asset('storage/' . $meal->image) }}" class="card-img-top" alt="{{ $meal->name }}" style="height: 200px; object-fit: cover; width: 100%;">
-        @else
-            <img src="https://images.unsplash.com/photo-1561758033-d89a9ad46330?q=80&w=500" class="card-img-top" alt="{{ $meal->name }}" style="height: 200px; object-fit: cover; width: 100%;">
-        @endif
-
-       <div class="card-body" style="display: block !important; text-align: right !important; padding: 15px !important;">
-    
-    <!-- اسم ووصف الوجبة -->
-    <div style="margin-bottom: 15px !important;">
-        <h5 class="card-title fw-bold" style="color: #fff !important; margin-bottom: 5px;">{{ $meal->name }}</h5>
-        <p class="card-text text-muted small" style="margin-bottom: 0;">{{ $meal->description }}</p>
     </div>
 
-    <!-- السعر القديم (إن وجد) -->
-    @if($hasDiscount)
-        <div style="margin-bottom: 3px !important;">
-            <span style="text-decoration: line-through !important; color: #aaa !important; font-size: 13px !important;">
-                {{ number_format($meal->price, 2) }} ج.م
-            </span>
-        </div>
-        <!-- السعر الجديد -->
-        <div style="margin-bottom: 12px !important;">
-            <span style="color: #ff6b6b !important; font-weight: bold !important; font-size: 18px !important;">
-                {{ number_format($finalPrice, 2) }} ج.م
-            </span>
-        </div>
-    @else
-        <!-- السعر العادي -->
-        <div style="margin-bottom: 12px !important;">
-            <span style="font-weight: bold !important; color: #fff !important; font-size: 18px !important;">
-                {{ number_format($meal->price, 2) }} ج.م
-            </span>
-        </div>
-    @endif
 
-    <!-- زر إضافة للسلة -->
-    <div style="width: 100% !important; clear: both !important;">
-        <form action="{{ route('cart.add', $meal->id) }}" method="POST" style="width: 100% !important; margin: 0 !important;">
-            @csrf
-            <input type="hidden" name="quantity" value="1">
-            <button type="submit" class="btn btn-warning w-100 fw-bold" style="width: 100% !important;">
-                <i class="fa-solid fa-cart-plus me-1"></i> إضافة للسلة
-            </button>
-        </form>
+    <div class="row g-4">
+
+        @forelse($meals as $meal)
+
+            <div class="col-md-6 col-lg-4 col-xl-3">
+
+                <div class="menu-card">
+
+                    <div class="menu-image-wrapper">
+
+                        @if($meal->image)
+
+                            <img
+                                src="{{ asset('storage/' . $meal->image) }}"
+                                class="menu-image"
+                                alt="{{ $meal->name }}"
+                            >
+
+                        @else
+
+                            <div class="menu-placeholder">
+                                🍽️
+                            </div>
+
+                        @endif
+
+                    </div>
+
+
+                    <div class="menu-body">
+
+                        <h5>
+                            {{ $meal->name }}
+                        </h5>
+
+                        <p>
+                            {{ Str::limit($meal->description, 90) }}
+                        </p>
+
+
+                        <div class="menu-price">
+
+                            @if(
+                                !is_null($meal->discount_price) &&
+                                $meal->discount_price > 0 &&
+                                $meal->discount_price < $meal->price
+                            )
+
+                                <span class="old-price">
+                                    {{ number_format($meal->price, 2) }} EGP
+                                </span>
+
+                            @endif
+
+                            <strong>
+                                {{ number_format($meal->active_price, 2) }} EGP
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="menu-footer">
+
+                        <form
+                            method="POST"
+                            action="{{ route('cart.add', $meal->id) }}"
+                        >
+
+                            @csrf
+
+                            <button
+                                type="submit"
+                                class="cart-btn"
+                            >
+                                Add to Cart
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        @empty
+
+            <div class="col-12">
+
+                <div class="empty-menu">
+                    No meals found.
+                </div>
+
+            </div>
+
+        @endforelse
+
     </div>
 
 </div>
+
+
+<style>
+
+.menu-heading {
+    margin-bottom: 30px;
+}
+
+.menu-heading h1 {
+    color: #111827;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.menu-heading p {
+    color: #64748b;
+}
+
+.menu-card {
+    height: 100%;
+    background: #fff;
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(15,23,42,.07);
+    transition: .25s;
+}
+
+.menu-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 40px rgba(15,23,42,.12);
+}
+
+.menu-image-wrapper {
+    height: 220px;
+    background: #f1f5f9;
+}
+
+.menu-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.menu-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+}
+
+.menu-body {
+    padding: 20px;
+}
+
+.menu-body h5 {
+    color: #111827;
+    font-weight: 800;
+}
+
+.menu-body p {
+    color: #64748b;
+    min-height: 48px;
+}
+
+.menu-price {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.menu-price strong {
+    color: #16a34a;
+    font-size: 18px;
+}
+
+.old-price {
+    color: #94a3b8;
+    text-decoration: line-through;
+    font-size: 13px;
+}
+
+.menu-footer {
+    padding: 0 20px 20px;
+}
+
+.cart-btn {
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+    padding: 12px;
+    background: #2563eb;
+    color: white;
+    font-weight: 700;
+    transition: .2s;
+}
+
+.cart-btn:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+.empty-menu {
+    background: #fff;
+    border-radius: 16px;
+    padding: 50px;
+    text-align: center;
+    color: #64748b;
+}
+
+</style>
+
+@endsection

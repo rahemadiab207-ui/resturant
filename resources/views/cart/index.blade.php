@@ -1,84 +1,169 @@
 @extends('layout.app')
 
+@section('title', 'Cart')
+
 @section('content')
+
 <div class="container py-4">
-    <div class="text-center mb-4">
-        <h2 class="fw-bold text-warning"><i class="fa-solid fa-cart-shopping me-2"></i>سلة الشراء</h2>
-        <p class="text-muted">مراجعة الوجبات المختارة قبل تأكيد الطلب</p>
+
+    <div class="page-header mb-4">
+
+        <div>
+            <h1 class="page-title">
+                Shopping Cart
+            </h1>
+
+            <p class="page-subtitle">
+                مراجعة المنتجات قبل إتمام الطلب
+            </p>
+        </div>
+
     </div>
 
-    @if(session('cart') && count(session('cart')) > 0)
-        <div class="row g-4">
-            <!-- جدول الوجبات -->
-            <div class="col-lg-8">
-                <div class="card shadow-sm border-0 rounded-3">
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0 text-center">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>الوجبة</th>
-                                        <th>السعر</th>
-                                        <th>الكمية</th>
-                                        <th>الإجمالي</th>
-                                        <th>إجراء</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-       @php $total = 0; @endphp
-        @foreach(session('cart') as $id => $details)
-       @php $total += $details['price'] * $details['quantity']; @endphp
-         <tr>
-                 <td class="fw-bold "style="color:black!important ; font size: 1.2rem">{{ $details['name'] }}</td>
-                    <td>{{ $details['price'] }} ج.م</td>
-                             <td>{{ $details['quantity'] }}</td>
-                             <td class="fw-bold text-black">{{ $details['price'] * $details['quantity'] }} ج.م</td>
+
+    @if(empty($cart))
+
+        <div class="card-modern p-5 text-center">
+
+            <h4 class="fw-bold mb-2">
+                السلة فارغة
+            </h4>
+
+            <p class="text-muted">
+                أضف بعض الوجبات أولاً.
+            </p>
+
+            <a
+                href="{{ route('home') }}"
+                class="btn-modern btn-primary-modern"
+            >
+                Browse Meals
+            </a>
+
+        </div>
+
+    @else
+
+        <div class="card-modern">
+
+            <div class="table-responsive">
+
+                <table class="table table-modern align-middle">
+
+                    <thead>
+
+                    <tr>
+                        <th>Meal</th>
+                        <th>Price</th>
+                        <th>Quantity</th>
+                        <th>Total</th>
+                        <th></th>
+                    </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                    @foreach($cart as $id => $item)
+
+                        <tr>
+
                             <td>
-                                    <form action="{{ route('cart.remove', $id) ?? '#' }}" method="POST">
-                                     @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
-                                                        <i class="fa-solid fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+
+                                <div class="d-flex align-items-center gap-3">
+
+                                    @if(!empty($item['image']))
+
+                                        <img
+                                            src="{{ asset('storage/' . $item['image']) }}"
+                                            alt="{{ $item['name'] }}"
+                                            style="
+                                                width:60px;
+                                                height:60px;
+                                                object-fit:cover;
+                                                border-radius:10px;
+                                            "
+                                        >
+
+                                    @endif
+
+                                    <strong>
+                                        {{ $item['name'] }}
+                                    </strong>
+
+                                </div>
+
+                            </td>
+
+                            <td>
+                                {{ number_format($item['price'], 2) }}
+                                EGP
+                            </td>
+
+                            <td>
+                                {{ $item['quantity'] }}
+                            </td>
+
+                            <td>
+                                <strong>
+                                    {{ number_format(
+                                        $item['price'] * $item['quantity'],
+                                        2
+                                    ) }}
+                                    EGP
+                                </strong>
+                            </td>
+
+                            <td>
+
+                                <form
+                                    method="POST"
+                                    action="{{ route('cart.remove', $id) }}"
+                                >
+
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-outline-danger btn-sm"
+                                    >
+                                        Remove
+                                    </button>
+
+                                </form>
+
+                            </td>
+
+                        </tr>
+
+                    @endforeach
+
+                    </tbody>
+
+                </table>
+
             </div>
 
-            <!-- ملخص الفاتورة -->
-            <div class="col-lg-4">
-                <div class="card shadow-sm border-0 rounded-3">
-                    <div class="card-header bg-warning text-dark fw-bold">ملخص الطلب</div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between mb-3">
-                            <span>إجمالي الوجبات:</span>
-                            <span class="fw-bold text-white fs-5">{{ $total }} ج.م</span>
-                        </div>
-                        <hr>
-                        <a href="{{ route('checkout') ?? '#' }}" class="btn btn-warning w-100 fw-bold py-2">
-                            تأكيد الطلب والدفع <i class="fa-solid fa-arrow-left ms-1"></i>
-                        </a>
-                    </div>
-                </div>
+            <div
+                class="p-4 border-top d-flex justify-content-between align-items-center"
+            >
+
+                <span class="fw-bold">
+                    Total
+                </span>
+
+                <strong class="fs-4">
+                    {{ number_format($total, 2) }}
+                    EGP
+                </strong>
+
             </div>
+
         </div>
-    @else
-        <!-- في حال كانت السلة فارغة -->
-        <div class="text-center py-5">
-            <div class="alert alert-warning d-inline-block px-5 py-3 rounded-3 shadow-sm">
-                <i class="fa-solid fa-basket-shopping fs-2 mb-2 d-block"></i>
-                سلة الشراء فارغة حالياً!
-            </div>
-            <div class="mt-3">
-                <a href="{{ url('/') }}" class="btn btn-dark"><i class="fa-solid fa-utensils me-1"></i> تصفح المنيو</a>
-            </div>
-        </div>
+
     @endif
+
 </div>
+
 @endsection

@@ -2,42 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Order;
-use App\Models\OrderItem;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function checkout()
+    public function index()
     {
-        $cart = session()->get('cart', []);
-        if (empty($cart)) {
-            return redirect()->back()->with('error', 'السلة فارغة!');
-        }
+        $orders = Order::with([
+            'user',
+            'items.meal',
+        ])
+            ->latest()
+            ->get();
 
-        $totalPrice = 0;
-        foreach ($cart as $item) {
-            $totalPrice += $item['price'] * $item['quantity'];
-        }
+        return view(
+            'admin.orders',
+            compact('orders')
+        );
+    }
 
-        $order = Order::create([
-            'user_id'     => Auth::id(),
-            'total_price' => $totalPrice,
-            'status'      => 'Pending',
+    public function show($id)
+    {
+        $order = Order::with([
+            'user',
+            'items.meal',
+        ])->findOrFail($id);
+
+        return view(
+            'admin.order-show',
+            compact('order')
+        );
+    }
+
+    public function updateStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => [
+                'required',
+                'in:Pending,Preparing,Out for Delivery,Completed,Canceled',
+            ],
         ]);
 
-        foreach ($cart as $mealId => $details) {
-            OrderItem::create([
-                'order_id' => $order->id,
-                'meal_id'  => $mealId,
-                'quantity' => $details['quantity'],
-                'price'    => $details['price'],
-            ]);
-        }
+        $order = Order::findOrFail($id);
 
-        session()->forget('cart');
+        $order->update([
+            'status' => $validated['status'],
+        ]);
 
-        return redirect()->route('profile')->with('success', 'تم إرسال طلبك بنجاح للتحضير!');
+        return back()->with(
+            'success',
+            'تم تحديث حالة الطلب بنجاح.'
+        );
     }
 }
