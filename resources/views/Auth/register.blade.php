@@ -35,6 +35,7 @@
 
                         <div class="row g-3">
 
+                            {{-- Name --}}
                             <div class="col-md-6">
 
                                 <label class="form-label-modern">
@@ -49,8 +50,15 @@
                                     required
                                 >
 
+                                @error('name')
+                                    <small class="text-danger">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+
                             </div>
 
+                            {{-- Email --}}
                             <div class="col-md-6">
 
                                 <label class="form-label-modern">
@@ -65,9 +73,16 @@
                                     required
                                 >
 
+                                @error('email')
+                                    <small class="text-danger">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+
                             </div>
 
-                            <div class="col-md-6">
+                            {{-- Phone --}}
+                            <div class="col-12">
 
                                 <label class="form-label-modern">
                                     Phone
@@ -75,29 +90,21 @@
 
                                 <input
                                     type="text"
-                                    name="phone1"
-                                    value="{{ old('phone1') }}"
+                                    name="phone"
+                                    value="{{ old('phone') }}"
                                     class="form-control-modern"
                                     required
                                 >
 
-                            </div>
-
-                            <div class="col-md-6">
-
-                                <label class="form-label-modern">
-                                    Phone 2
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="phone2"
-                                    value="{{ old('phone2') }}"
-                                    class="form-control-modern"
-                                >
+                                @error('phone')
+                                    <small class="text-danger">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
 
                             </div>
 
+                            {{-- Address --}}
                             <div class="col-12">
 
                                 <label class="form-label-modern">
@@ -111,8 +118,15 @@
                                     required
                                 >{{ old('address') }}</textarea>
 
+                                @error('address')
+                                    <small class="text-danger">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+
                             </div>
 
+                            {{-- Password --}}
                             <div class="col-md-6">
 
                                 <label class="form-label-modern">
@@ -126,8 +140,15 @@
                                     required
                                 >
 
+                                @error('password')
+                                    <small class="text-danger">
+                                        {{ $message }}
+                                    </small>
+                                @enderror
+
                             </div>
 
+                            {{-- Confirm Password --}}
                             <div class="col-md-6">
 
                                 <label class="form-label-modern">
