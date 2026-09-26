@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    /*
+    |--------------------------------------------------------------------------
+    | Display All Orders
+    |--------------------------------------------------------------------------
+    */
+
     public function index()
     {
         $orders = Order::with([
@@ -22,6 +28,13 @@ class OrderController extends Controller
         );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Display Single Order
+    |--------------------------------------------------------------------------
+    */
+
     public function show($id)
     {
         $order = Order::with([
@@ -35,20 +48,67 @@ class OrderController extends Controller
         );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Order Status
+    |--------------------------------------------------------------------------
+    */
+
     public function updateStatus(Request $request, $id)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Validate Status
+        |--------------------------------------------------------------------------
+        |
+        | The database uses:
+        |
+        | pending
+        | confirmed
+        | preparing
+        | ready
+        | out_for_delivery
+        | delivered
+        | cancelled
+        |
+        */
+
+        $statuses = array_keys(Order::statuses());
+
         $validated = $request->validate([
             'status' => [
                 'required',
-                'in:Pending,Preparing,Out for Delivery,Completed,Canceled',
+                'in:' . implode(',', $statuses),
             ],
         ]);
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find Order
+        |--------------------------------------------------------------------------
+        */
+
         $order = Order::findOrFail($id);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Status
+        |--------------------------------------------------------------------------
+        */
 
         $order->update([
             'status' => $validated['status'],
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return
+        |--------------------------------------------------------------------------
+        */
 
         return back()->with(
             'success',
